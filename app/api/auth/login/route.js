@@ -3,13 +3,13 @@ import { generateToken } from '@/lib/auth';
 
 export async function POST(req) {
   try {
-    const { username, password } = await req.json();
+    const { email, password } = await req.json();
 
     // ตรวจสอบ credentials
-    const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
+    const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@example.com';
     const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
 
-    if (username !== ADMIN_USERNAME || password !== ADMIN_PASSWORD) {
+    if (email !== ADMIN_EMAIL || password !== ADMIN_PASSWORD) {
       return NextResponse.json(
         { success: false, error: 'Invalid credentials' },
         { status: 401 }
@@ -17,14 +17,14 @@ export async function POST(req) {
     }
 
     // สร้าง JWT token
-    const token = generateToken(username);
+    const token = generateToken(email);
 
     return NextResponse.json(
       {
         success: true,
         data: {
           token,
-          user: { username },
+          user: { email },
           expiresIn: '24h'
         }
       },
