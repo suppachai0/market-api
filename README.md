@@ -85,7 +85,89 @@ git push origin main
 
 ---
 
-## 📡 API Endpoints
+## � Authentication Endpoints
+
+### Admin Login (Email-based)
+
+```bash
+POST /api/auth/login
+
+Body:
+{
+  "email": "admin@sisaket.go.th",
+  "password": "admin123"
+}
+
+Response:
+{
+  "success": true,
+  "data": {
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "user": { "email": "admin@sisaket.go.th" },
+    "expiresIn": "24h"
+  }
+}
+```
+
+### User Signup (Register)
+
+```bash
+POST /api/auth/signup
+
+Body:
+{
+  "username": "john_doe",
+  "email": "john@example.com",
+  "password": "SecurePass123!",
+  "fullName": "John Doe"
+}
+
+Response:
+{
+  "success": true,
+  "data": {
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "user": {
+      "_id": "...",
+      "username": "john_doe",
+      "email": "john@example.com",
+      "fullName": "John Doe"
+    },
+    "expiresIn": "24h"
+  }
+}
+```
+
+### User Login (Email-based)
+
+```bash
+POST /api/auth/user-login
+
+Body:
+{
+  "email": "john@example.com",
+  "password": "SecurePass123!"
+}
+
+Response:
+{
+  "success": true,
+  "data": {
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "user": {
+      "_id": "...",
+      "username": "john_doe",
+      "email": "john@example.com",
+      "fullName": "John Doe"
+    },
+    "expiresIn": "24h"
+  }
+}
+```
+
+---
+
+## 📡 Booking Endpoints
 
 ### 1️⃣ GET - ดึงข้อมูลการจองทั้งหมด
 
@@ -148,10 +230,15 @@ Response:
 }
 ```
 
-### 4️⃣ PUT - อัพเดทสถานะการจอง
+### 4️⃣ PUT - อัพเดทการจอง (ต้องมี Admin Token)
 
 ```bash
 PUT /api/bookings/:id
+
+Headers:
+{
+  "Authorization": "Bearer <JWT_TOKEN>"
+}
 
 Body:
 {
@@ -165,10 +252,15 @@ Response:
 }
 ```
 
-### 5️⃣ DELETE - ลบการจอง
+### 5️⃣ DELETE - ลบการจอง (ต้องมี Admin Token)
 
 ```bash
 DELETE /api/bookings/:id
+
+Headers:
+{
+  "Authorization": "Bearer <JWT_TOKEN>"
+}
 
 Response:
 {
@@ -181,9 +273,11 @@ Response:
 
 ## 📊 Database Schema
 
+### Booking Model
 ```javascript
 Booking {
   _id: ObjectId,              // Auto-generated
+  userId: ObjectId,           // Reference to User (optional, null if unauthenticated)
   storeName: String,          // ชื่อร้าน (บังคับ)
   ownerName: String,          // ชื่อเจ้าของ (บังคับ)
   phone: String,              // เบอร์โทร 10 หลัก (บังคับ)
@@ -192,6 +286,19 @@ Booking {
   stallNumber: String,        // หมายเลขสถาน (บังคับ)
   bookingDate: Date,          // วันที่จอง (บังคับ)
   status: String,             // pending, approved, rejected (default: pending)
+  createdAt: Date,            // Auto-generated
+  updatedAt: Date             // Auto-generated
+}
+```
+
+### User Model
+```javascript
+User {
+  _id: ObjectId,              // Auto-generated
+  username: String,           // Unique, lowercase
+  email: String,              // Unique, with regex validation
+  password: String,           // Hashed with bcryptjs (not returned by API)
+  fullName: String,           // ชื่อเต็ม
   createdAt: Date,            // Auto-generated
   updatedAt: Date             // Auto-generated
 }
@@ -577,15 +684,22 @@ Response:
 }
 ```
 
-## 🔑 Environment Variables
+## 🌍 Environment Variables
 
-สร้างไฟล์ `.env.local` ในโฟลเดอร์ root:
-
+### Local (.env.local)
 ```env
-MONGODB_URI=mongodb://root:example@localhost:27017/market-api?authSource=admin
+MONGODB_URI=mongodb+srv://suppachai4454_db_user:PASSWORD@cluster0.kcllz2s.mongodb.net/market-api?appName=Cluster0
+JWT_SECRET=your-secret-key-change-this-in-production
+ADMIN_EMAIL=admin@sisaket.go.th
+ADMIN_PASSWORD=admin123
 ```
 
-**สำหรับ Docker Compose**: ค่าตัวแปรถูกกำหนดอยู่แล้วใน `docker-compose.yml`
+### Vercel Dashboard
+Set these environment variables in Project Settings > Environment Variables:
+- `MONGODB_URI`
+- `JWT_SECRET`
+- `ADMIN_EMAIL`
+- `ADMIN_PASSWORD`
 
 ## 📝 Booking Schema
 
