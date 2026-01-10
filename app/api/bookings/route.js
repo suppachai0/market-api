@@ -1,5 +1,6 @@
 import dbConnect from '@/lib/mongodb';
 import Booking from '@/models/Booking';
+import { verifyToken, getTokenFromHeader } from '@/lib/auth';
 
 export async function GET(request) {
   await dbConnect();
@@ -19,6 +20,18 @@ export async function GET(request) {
 }
 
 export async function POST(request) {
+  // Token เป็นตัวเลือก - ให้จองได้ทั้งกับ/ไม่มี Token
+  const authHeader = request.headers.get('Authorization');
+  const token = getTokenFromHeader(authHeader);
+  let userId = null;
+
+  if (token) {
+    const decoded = verifyToken(token);
+    if (decoded) {
+      userId = decoded.userId;
+    }
+  }
+
   await dbConnect();
 
   try {
@@ -35,7 +48,13 @@ export async function POST(request) {
       }
     }
 
-    const booking = await Booking.create(body);
+    // เพิ่ม userId ถ้ามี token
+    const bookingData = {
+      ...body,
+      ...(userId && { userId })
+    };
+
+    const booking = await Booking.create(bookingData);
 
     return Response.json(
       { success: true, data: booking },

@@ -2,6 +2,11 @@ import mongoose from 'mongoose';
 
 const BookingSchema = new mongoose.Schema(
   {
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null // ปล่อยให้เป็น null ถ้าจองโดยไม่ login
+    },
     storeName: {
       type: String,
       required: [true, 'โปรดระบุชื่อร้านค้า'],

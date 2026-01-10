@@ -1,5 +1,6 @@
 import dbConnect from '@/lib/mongodb';
 import Booking from '@/models/Booking';
+import { verifyToken, getTokenFromHeader } from '@/lib/auth';
 
 export async function GET(request, { params }) {
   await dbConnect();
@@ -28,6 +29,25 @@ export async function GET(request, { params }) {
 }
 
 export async function PUT(request, { params }) {
+  // ตรวจสอบ Authentication
+  const authHeader = request.headers.get('Authorization');
+  const token = getTokenFromHeader(authHeader);
+
+  if (!token) {
+    return Response.json(
+      { success: false, error: 'Unauthorized - Missing token' },
+      { status: 401 }
+    );
+  }
+
+  const decoded = verifyToken(token);
+  if (!decoded) {
+    return Response.json(
+      { success: false, error: 'Unauthorized - Invalid token' },
+      { status: 401 }
+    );
+  }
+
   await dbConnect();
 
   try {
@@ -59,6 +79,25 @@ export async function PUT(request, { params }) {
 }
 
 export async function DELETE(request, { params }) {
+  // ตรวจสอบ Authentication
+  const authHeader = request.headers.get('Authorization');
+  const token = getTokenFromHeader(authHeader);
+
+  if (!token) {
+    return Response.json(
+      { success: false, error: 'Unauthorized - Missing token' },
+      { status: 401 }
+    );
+  }
+
+  const decoded = verifyToken(token);
+  if (!decoded) {
+    return Response.json(
+      { success: false, error: 'Unauthorized - Invalid token' },
+      { status: 401 }
+    );
+  }
+
   await dbConnect();
 
   try {
