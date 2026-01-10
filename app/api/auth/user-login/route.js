@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
-import dbConnect from '../../../lib/mongodb';
-import User from '../../../models/User';
-import { generateToken } from '../../../lib/auth';
+import dbConnect from '@/lib/mongodb';
+import User from '@/models/User';
+import { generateToken } from '@/lib/auth';
 
 export async function POST(req) {
   await dbConnect();
