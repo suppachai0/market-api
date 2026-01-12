@@ -1,5 +1,10 @@
 import { NextResponse } from 'next/server';
 import { generateToken } from '@/lib/auth';
+import { enableCORS, handleCORS } from '@/lib/cors';
+
+export async function OPTIONS(request) {
+  return handleCORS(request);
+}
 
 export async function POST(req) {
   try {
@@ -19,7 +24,7 @@ export async function POST(req) {
     // สร้าง JWT token
     const token = generateToken(email);
 
-    return NextResponse.json(
+    const response = NextResponse.json(
       {
         success: true,
         data: {
@@ -30,11 +35,13 @@ export async function POST(req) {
       },
       { status: 200 }
     );
+    return enableCORS(response);
   } catch (error) {
     console.error('Login error:', error);
-    return NextResponse.json(
+    const response = NextResponse.json(
       { success: false, error: 'Login failed' },
       { status: 500 }
     );
+    return enableCORS(response);
   }
 }

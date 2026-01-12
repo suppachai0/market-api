@@ -1,21 +1,29 @@
+import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import Booking from '@/models/Booking';
 import { verifyToken, getTokenFromHeader } from '@/lib/auth';
+import { enableCORS, handleCORS } from '@/lib/cors';
+
+export async function OPTIONS(request) {
+  return handleCORS(request);
+}
 
 export async function GET(request) {
   await dbConnect();
 
   try {
     const bookings = await Booking.find({}).sort({ createdAt: -1 });
-    return Response.json(
+    const response = NextResponse.json(
       { success: true, data: bookings },
       { status: 200 }
     );
+    return enableCORS(response);
   } catch (error) {
-    return Response.json(
+    const response = NextResponse.json(
       { success: false, error: error.message },
       { status: 500 }
     );
+    return enableCORS(response);
   }
 }
 
@@ -56,14 +64,16 @@ export async function POST(request) {
 
     const booking = await Booking.create(bookingData);
 
-    return Response.json(
+    const response = NextResponse.json(
       { success: true, data: booking },
       { status: 201 }
     );
+    return enableCORS(response);
   } catch (error) {
-    return Response.json(
+    const response = NextResponse.json(
       { success: false, error: error.message },
       { status: 400 }
     );
+    return enableCORS(response);
   }
 }

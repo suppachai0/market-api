@@ -3,6 +3,11 @@ import bcrypt from 'bcryptjs';
 import dbConnect from '@/lib/mongodb';
 import User from '@/models/User';
 import { generateToken } from '@/lib/auth';
+import { enableCORS, handleCORS } from '@/lib/cors';
+
+export async function OPTIONS(request) {
+  return handleCORS(request);
+}
 
 export async function POST(req) {
   await dbConnect();
@@ -12,30 +17,33 @@ export async function POST(req) {
 
     // ตรวจสอบข้อมูล
     if (!email || !password) {
-      return NextResponse.json(
+      const response = NextResponse.json(
         { success: false, error: 'Please provide email and password' },
         { status: 400 }
       );
+      return enableCORS(response);
     }
 
     // หา user ด้วย email
     const user = await User.findOne({ email }).select('+password');
 
     if (!user) {
-      return NextResponse.json(
+      const response = NextResponse.json(
         { success: false, error: 'Invalid email or password' },
         { status: 401 }
       );
+      return enableCORS(response);
     }
 
     // ตรวจสอบ password
     const isPasswordCorrect = await bcrypt.compare(password, user.password);
 
     if (!isPasswordCorrect) {
-      return NextResponse.json(
+      const response = NextResponse.json(
         { success: false, error: 'Invalid email or password' },
         { status: 401 }
       );
+      return enableCORS(response);
     }
 
     // สร้าง token
@@ -57,11 +65,13 @@ export async function POST(req) {
       },
       { status: 200 }
     );
+    return enableCORS(response);
   } catch (error) {
     console.error('Login error:', error);
-    return NextResponse.json(
+    const response = NextResponse.json(
       { success: false, error: error.message },
       { status: 500 }
     );
+    return enableCORS(response);
   }
 }

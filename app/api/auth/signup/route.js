@@ -3,6 +3,11 @@ import bcrypt from 'bcryptjs';
 import dbConnect from '@/lib/mongodb';
 import User from '@/models/User';
 import { generateToken } from '@/lib/auth';
+import { enableCORS, handleCORS } from '@/lib/cors';
+
+export async function OPTIONS(request) {
+  return handleCORS(request);
+}
 
 export async function POST(req) {
   await dbConnect();
@@ -24,10 +29,11 @@ export async function POST(req) {
     });
 
     if (existingUser) {
-      return NextResponse.json(
+      const response = NextResponse.json(
         { success: false, error: 'Username or email already exists' },
         { status: 400 }
       );
+      return enableCORS(response);
     }
 
     // Hash password
@@ -61,11 +67,13 @@ export async function POST(req) {
       },
       { status: 201 }
     );
+    return enableCORS(response);
   } catch (error) {
     console.error('Signup error:', error);
-    return NextResponse.json(
+    const response = NextResponse.json(
       { success: false, error: error.message },
       { status: 500 }
     );
+    return enableCORS(response);
   }
 }
