@@ -41,6 +41,11 @@ const BookingSchema = new mongoose.Schema(
       type: Date,
       required: [true, 'โปรดระบุวันที่จอง'],
     },
+    slipImage: {
+      url: String,          // Cloudinary URL
+      publicId: String,     // Cloudinary public ID (for deletion)
+      uploadedAt: Date,
+    },
     status: {
       type: String,
       enum: ['pending', 'approved', 'rejected'],
