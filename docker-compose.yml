@@ -1,16 +1,4 @@
 services:
-  mongodb:
-    image: mongo:6.0
-    container_name: market-mongo
-    restart: always
-    ports:
-      - '27017:27017'
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: example
-    volumes:
-      - mongo-data:/data/db
-
   nextjs:
     build: .
     container_name: market-nextjs
@@ -18,7 +6,7 @@ services:
     ports:
       - '3000:3000'
     environment:
-      MONGODB_URI: mongodb://root:example@mongodb:27017/market-api?authSource=admin
+      MONGODB_URI: mongodb://host.docker.internal:27017/market
       NODE_ENV: development
       JWT_SECRET: ${JWT_SECRET}
       ADMIN_EMAIL: ${ADMIN_EMAIL}
@@ -26,13 +14,7 @@ services:
       NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME: ${NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}
       CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY}
       CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET}
-    depends_on:
-      mongodb:
-        condition: service_started
     volumes:
       - ./:/app
       - /app/node_modules
       - /app/.next
-
-volumes:
-  mongo-data:

@@ -91,6 +91,62 @@ export async function PUT(request, { params }) {
   }
 }
 
+export async function PATCH(request, { params }) {
+  // ตรวจสอบ Authentication
+  const authHeader = request.headers.get('Authorization');
+  const token = getTokenFromHeader(authHeader);
+
+  if (!token) {
+    const response = NextResponse.json(
+      { success: false, error: 'Unauthorized - Missing token' },
+      { status: 401 }
+    );
+    return enableCORS(response);
+  }
+
+  const decoded = verifyToken(token);
+  if (!decoded) {
+    const response = NextResponse.json(
+      { success: false, error: 'Unauthorized - Invalid token' },
+      { status: 401 }
+    );
+    return enableCORS(response);
+  }
+
+  await dbConnect();
+
+  try {
+    const { id } = params;
+    const body = await request.json();
+
+    // PATCH = partial update (อัปเดตแค่ fields ที่ส่งมา)
+    const booking = await Booking.findByIdAndUpdate(id, body, {
+      new: true,
+      runValidators: false, // ไม่บังคับตรวจสอบ validator สำหรับ partial update
+    });
+
+    if (!booking) {
+      const response = NextResponse.json(
+        { success: false, error: 'ไม่พบการจองที่ขอ' },
+        { status: 404 }
+      );
+      return enableCORS(response);
+    }
+
+    const response = NextResponse.json(
+      { success: true, data: booking },
+      { status: 200 }
+    );
+    return enableCORS(response);
+  } catch (error) {
+    const response = NextResponse.json(
+      { success: false, error: error.message },
+      { status: 400 }
+    );
+    return enableCORS(response);
+  }
+}
+
 export async function DELETE(request, { params }) {
   // ตรวจสอบ Authentication
   const authHeader = request.headers.get('Authorization');

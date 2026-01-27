@@ -25,7 +25,7 @@ export async function POST(req) {
 
     // ตรวจสอบ username หรือ email มีอยู่แล้วหรือไม่
     const existingUser = await User.findOne({
-      $or: [{ username }, { email }]
+      $or: [{ username }, { email: email.trim() }]
     });
 
     if (existingUser) {
@@ -43,7 +43,7 @@ export async function POST(req) {
     // สร้าง user ใหม่
     const user = await User.create({
       username,
-      email,
+      email: email.trim(),
       password: hashedPassword,
       fullName: fullName || username
     });
